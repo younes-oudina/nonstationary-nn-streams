@@ -54,6 +54,24 @@ uv sync                       # creates .venv and installs deps + dev group
 source .venv/bin/activate     # activate the environment
 ```
 
+## Data
+
+The benchmarks use the **test splits** of **MNIST** and **CIFAR-10** (10,000 images each), downloaded with `torchvision`:
+
+```bash
+python scripts/download_data.py                    # MNIST + CIFAR-10 into data/
+```
+
+Resulting layout (ignored by git):
+
+```
+data/
+├── MNIST/raw/              # idx files (torchvision fetches train + test)
+└── cifar-10-batches-py/    # single archive with all batches; only test_batch is used
+```
+
+The test split is the fixed image set shared by every task. The task streams (random labels, permutations) are generated on the fly from a seed.
+
 ## Status
 
 - [ ] Plasticity task streams (MNIST / CIFAR-10)

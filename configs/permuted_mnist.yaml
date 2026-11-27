@@ -1,0 +1,39 @@
+# Permuted MNIST — plasticity benchmark (Fig. 2 of Galashov et al., NeurIPS 2024).
+#
+# Sources:
+#   [SR] Galashov et al. 2024, Sec. 5 and App. D.1 ("similar training regime as in [34]").
+#   [K]  Kumar et al. 2023, "Maintaining Plasticity in Continual Learning via
+#        Regenerative Regularization", Sec. 4.2, Table 1 (= ref. [34] of [SR]).
+# Values that [SR] does not state are taken from [K] and marked as such.
+
+name: permuted_mnist
+
+data:
+  dataset: mnist
+  root: data
+  split: test          # [SR]: "fixed subset of 10000 images"; [K] samples 10k from the train split
+  num_images: 10000    # [SR] D.1, [K] Table 1
+  subset_seed: 0       # only used if num_images < size of the split
+  normalize: true      # x / 255 in [0, 1]  ([SR] D.1)
+  flatten: true        # 28x28 -> 784, needed for the pixel permutation and the MLP
+
+stream:
+  num_tasks: 500       # not given in [SR]; [K] Table 1 uses 500
+  batch_size: 16       # [SR] D.1, [K] Table 1
+  epochs_per_task: 1   # [SR] D.1 -> 10000 / 16 = 625 steps per task ([K] Table 1)
+  permute_first_task: true  # every task (including task 0) gets a random permutation, as in [K]
+
+model:
+  type: mlp
+  hidden_sizes: [256, 256, 256, 256]  # [SR] D.1: 4 hidden layers of 256 units ([K] uses 2 x 100)
+  activation: relu
+  init: pytorch_default               # [K] Sec. 5; [SR] does not specify
+
+optim:
+  name: sgd            # [SR]: online SGD with a fixed learning rate
+  lr: 0.1              # [SR] D.1: best for most methods
+
+eval:
+  metric: online_accuracy   # accuracy on each incoming batch before the update ([SR] Sec. 5)
+
+seeds: [0, 1, 2]       # [SR]: mean and std over 3 seeds
